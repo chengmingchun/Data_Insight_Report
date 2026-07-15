@@ -6,6 +6,8 @@
 *.txt text eol=lf
 *.csv text eol=lf
 *.html text eol=lf
+*.pdf binary
+*.png binary
 
 outputs/*.html whitespace=-blank-at-eol,-blank-at-eof
 docs/process/*.log whitespace=-blank-at-eol,-blank-at-eof

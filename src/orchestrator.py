@@ -17,7 +17,7 @@ from src.cleaner import DataCleaner
 from src.insight import InsightProvider, InsightService, TemplateInsightProvider, build_insight_payload
 from src.loader import CsvLoader
 from src.models import ReportModel
-from src.report import HtmlReportGenerator
+from src.report import HtmlReportGenerator, PdfReportGenerator
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -34,6 +34,7 @@ class PipelineResult:
     report: ReportModel
     figures: dict[str, go.Figure]
     html: str
+    pdf: bytes
     clean_df: pd.DataFrame
     partial_df: pd.DataFrame
     rejected_df: pd.DataFrame
@@ -79,10 +80,12 @@ class AnalysisOrchestrator:
                 config={"displaylogo": False, "responsive": True},
             )
         html = HtmlReportGenerator(ROOT / "templates" / "report.html").generate(report, chart_html)
+        pdf = PdfReportGenerator().generate(report)
         return PipelineResult(
             report=report,
             figures=figures,
             html=html,
+            pdf=pdf,
             clean_df=cleaning.clean_df,
             partial_df=cleaning.partial_df,
             rejected_df=cleaning.rejected_df,

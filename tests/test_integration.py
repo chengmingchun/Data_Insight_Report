@@ -19,6 +19,7 @@ def test_dirty_csv_runs_end_to_end_without_external_service() -> None:
     assert result.report.analysis.overview.total_sales == 500
     assert result.report.insight
     assert "<html" in result.html.lower()
+    assert result.pdf.startswith(b"%PDF-")
     assert len(result.figures) == 3
     assert len(result.rejected_df) == 8
 

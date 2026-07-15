@@ -31,4 +31,5 @@ fi
 
 echo "[start] Opening AI Data Insight Report at http://localhost:8501"
 export PYTHONUTF8=1
-exec "$VENV_PY" -m streamlit run app.py "$@"
+export STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+exec "$VENV_PY" -m streamlit run app.py --server.headless=true --server.address=127.0.0.1 --browser.gatherUsageStats=false "$@"

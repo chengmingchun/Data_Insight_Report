@@ -101,7 +101,7 @@ def render_result(result: PipelineResult) -> None:
             st.dataframe(result.anomaly_df, width="stretch", hide_index=True)
 
     st.subheader("导出")
-    download_columns = st.columns(3)
+    download_columns = st.columns(4)
     download_columns[0].download_button(
         "下载 HTML 报告",
         data=result.html.encode("utf-8"),
@@ -110,13 +110,20 @@ def render_result(result: PipelineResult) -> None:
         width="stretch",
     )
     download_columns[1].download_button(
+        "下载 PDF 报告",
+        data=result.pdf,
+        file_name="data_insight_report.pdf",
+        mime="application/pdf",
+        width="stretch",
+    )
+    download_columns[2].download_button(
         "下载清洗后 CSV",
         data=result.clean_df.to_csv(index=False).encode("utf-8-sig"),
         file_name="clean_orders.csv",
         mime="text/csv",
         width="stretch",
     )
-    download_columns[2].download_button(
+    download_columns[3].download_button(
         "下载异常记录 CSV",
         data=result.anomaly_df.to_csv(index=False).encode("utf-8-sig"),
         file_name="anomalies.csv",
@@ -135,13 +142,12 @@ st.caption("电商订单 CSV 的可追踪清洗、确定性统计、异常检测
 with st.sidebar:
     st.header("分析参数")
     uploaded = st.file_uploader("上传订单 CSV", type=["csv"])
-    use_sample = st.checkbox("使用内置样例数据", value=uploaded is None)
+    use_sample = st.checkbox("使用内置样例数据", value=False)
     top_n = st.slider("Top-N", min_value=3, max_value=20, value=config.top_n)
     st.page_link("pages/1_AI_Settings.py", label="AI Settings", icon=":material/settings:")
     generate = st.button("生成报告", type="primary", width="stretch")
 
-should_run = generate or "pipeline_result" not in st.session_state
-if should_run:
+if generate:
     try:
         if uploaded is not None and not use_sample:
             content = uploaded.getvalue()
@@ -168,3 +174,5 @@ if should_run:
 
 if "pipeline_result" in st.session_state:
     render_result(st.session_state.pipeline_result)
+else:
+    st.info("请上传 CSV 并点击“生成报告”，或手动启用内置样例数据。")
