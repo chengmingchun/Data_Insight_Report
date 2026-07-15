@@ -3,6 +3,7 @@ from src.insight import (
     DeepSeekInsightProvider,
     InsightProviderFactory,
     InsightService,
+    OpenAICompatibleInsightProvider,
     TemplateInsightProvider,
 )
 from src.models import InsightPayload
@@ -53,6 +54,21 @@ def test_service_rejects_numbers_not_in_payload() -> None:
 def test_factory_uses_fallback_without_key() -> None:
     provider = InsightProviderFactory.create(AppConfig(llm_api_key=""))
     assert isinstance(provider, TemplateInsightProvider)
+
+
+def test_factory_accepts_other_openai_compatible_providers() -> None:
+    provider = InsightProviderFactory.create(
+        AppConfig(
+            llm_provider="openrouter",
+            llm_api_key="not-a-real-key",
+            llm_model="vendor/model-name",
+            llm_base_url="https://openrouter.ai/api/v1",
+        )
+    )
+
+    assert isinstance(provider, OpenAICompatibleInsightProvider)
+    assert provider.provider_name == "openrouter"
+    assert provider.model == "vendor/model-name"
 
 
 def test_deepseek_adapter_sends_only_structured_payload() -> None:

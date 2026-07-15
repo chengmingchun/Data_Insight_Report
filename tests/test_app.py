@@ -4,6 +4,7 @@ from streamlit.testing.v1 import AppTest
 
 
 APP = Path(__file__).parents[1] / "app.py"
+SETTINGS = Path(__file__).parents[1] / "pages" / "1_AI_Settings.py"
 
 
 def test_initial_page_waits_for_user_input() -> None:
@@ -36,3 +37,9 @@ def test_explicit_sample_analysis_exposes_pdf_download() -> None:
     assert len(app.metric) == 10
     assert len(app.download_button) == 4
     assert app.download_button[1].label == "下载 PDF 报告"
+
+
+def test_ai_settings_offers_multiple_provider_presets() -> None:
+    app = AppTest.from_file(str(SETTINGS)).run()
+
+    assert app.selectbox[0].options == ["DeepSeek", "OpenAI", "OpenRouter", "Custom"]

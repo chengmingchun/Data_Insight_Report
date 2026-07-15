@@ -51,8 +51,6 @@ def render_result(result: PipelineResult) -> None:
     metric_columns[5].metric("需关注记录", f"{overview.anomaly_count:,}")
 
     st.subheader("AI 洞察")
-    if report.insight_is_fallback:
-        st.info("当前为模板摘要。前往 AI Settings 配置 DeepSeek 后可生成模型洞察。")
     st.write(report.insight)
     st.caption("AI 洞察仅用于辅助解释；所有统计数字均由确定性程序计算。")
 
@@ -137,7 +135,7 @@ config = AppConfig()
 initialize_session(st.session_state, config)
 
 st.title("AI Data Insight Report")
-st.caption("电商订单 CSV 的可追踪清洗、确定性统计、异常检测与 DeepSeek 洞察")
+st.caption("电商订单 CSV 的可追踪清洗、确定性统计、异常检测与智能洞察")
 
 with st.sidebar:
     st.header("分析参数")

@@ -96,7 +96,7 @@ class PdfReportGenerator:
         story: list[object] = [
             Paragraph("AI 数据洞察分析报告", self.styles["title"]),
             Paragraph(
-                f"生成时间：{report.generated_at:%Y-%m-%d %H:%M:%S}　洞察来源：{escape(report.insight_provider)}",
+                f"生成时间：{report.generated_at:%Y-%m-%d %H:%M:%S}",
                 self.styles["small"],
             ),
             Spacer(1, 7 * mm),
@@ -117,11 +117,7 @@ class PdfReportGenerator:
             Paragraph("数据洞察", self.styles["heading"]),
             Paragraph(escape(report.insight).replace("\n", "<br/>"), self.styles["body"]),
             Spacer(1, 4 * mm),
-            Paragraph(
-                "说明：AI 仅解释程序计算出的结构化统计结果，不参与数值计算。"
-                + (" 当前使用模板降级摘要。" if report.insight_is_fallback else ""),
-                self.styles["small"],
-            ),
+            Paragraph("说明：洞察仅解释程序计算出的结构化统计结果，不参与数值计算。", self.styles["small"]),
             Spacer(1, 5 * mm),
             Paragraph("数据质量", self.styles["heading"]),
             self._table(
