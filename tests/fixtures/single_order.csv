@@ -1,0 +1,2 @@
+order_id,order_date,region,category,product,quantity,unit_price,discount,status
+S001,2026-06-01,西北,电子产品,显示器,1,1000,0,已完成

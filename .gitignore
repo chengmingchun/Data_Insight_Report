@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.env
+.env.local
+.streamlit/secrets.toml
+outputs/*.html
+outputs/*.csv
+!outputs/.gitkeep
+!outputs/sample_report.html

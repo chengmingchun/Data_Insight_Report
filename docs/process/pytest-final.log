@@ -1,0 +1,16 @@
+.........................                                                [100%]
+=============================== tests coverage ================================
+_______________ coverage: platform win32, python 3.13.1-final-0 _______________
+
+Name              Stmts   Miss  Cover   Missing
+-----------------------------------------------
+src\analyzer.py      46      1    98%   17
+src\charts.py        27      1    96%   83
+src\insight.py      103     11    89%   71, 73-75, 95, 113-116, 144, 166, 186
+src\loader.py        44      7    84%   43, 56-57, 60, 64, 71, 77
+src\ui_state.py      10     10     0%   3-35
+-----------------------------------------------
+TOTAL               468     30    94%
+
+8 files skipped due to complete coverage.
+25 passed in 3.03s
