@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 数据洞察报告</title>
+  <style>
+    :root { --ink:#25313c; --muted:#68747f; --line:#dfe5e8; --surface:#f5f7f7; --accent:#167d76; --warm:#e0953e; }
+    * { box-sizing: border-box; }
+    body { margin:0; color:var(--ink); background:#fff; font-family:Arial,"Microsoft YaHei",sans-serif; line-height:1.55; }
+    header { border-bottom:4px solid var(--accent); padding:34px max(24px,calc((100% - 1180px)/2)); background:var(--surface); }
+    h1 { margin:0 0 6px; font-size:30px; letter-spacing:0; }
+    h2 { margin:0 0 18px; font-size:20px; letter-spacing:0; }
+    p { margin:0; }
+    .meta { color:var(--muted); font-size:13px; }
+    main { max-width:1180px; margin:0 auto; padding:28px 24px 52px; }
+    section { padding:26px 0; border-bottom:1px solid var(--line); }
+    .metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .metric { border:1px solid var(--line); border-radius:6px; padding:16px; min-height:92px; }
+    .metric span { display:block; color:var(--muted); font-size:13px; }
+    .metric strong { display:block; margin-top:6px; font-size:23px; color:var(--ink); }
+    .insight { border-left:4px solid var(--warm); padding:16px 18px; background:#fff9f1; }
+    .notice { margin-top:10px; color:var(--muted); font-size:12px; }
+    .quality { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .quality div { background:var(--surface); padding:14px; border-radius:4px; }
+    .charts { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+    .chart-wide { grid-column:1/-1; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { padding:9px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { background:var(--surface); }
+    footer { max-width:1180px; margin:0 auto; padding:18px 24px 40px; color:var(--muted); font-size:12px; }
+    @media (max-width:760px) { .metrics,.quality,.charts { grid-template-columns:1fr 1fr; } .chart-wide { grid-column:1/-1; } }
+    @media (max-width:520px) { .metrics,.quality,.charts { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>AI 数据洞察报告</h1>
+    <p class="meta">生成时间：{{ report.generated_at.strftime('%Y-%m-%d %H:%M:%S') }} · 洞察来源：{{ report.insight_provider }}</p>
+  </header>
+  <main>
+    <section>
+      <h2>业务概览</h2>
+      <div class="metrics">
+        <div class="metric"><span>有效订单</span><strong>{{ '{:,}'.format(report.analysis.overview.valid_orders) }}</strong></div>
+        <div class="metric"><span>总销售额</span><strong>¥{{ '{:,.2f}'.format(report.analysis.overview.total_sales) }}</strong></div>
+        <div class="metric"><span>平均订单金额</span><strong>¥{{ '{:,.2f}'.format(report.analysis.overview.average_order_value) }}</strong></div>
+        <div class="metric"><span>退款率</span><strong>{{ '{:.2%}'.format(report.analysis.overview.refund_rate) }}</strong></div>
+      </div>
+    </section>
+    <section>
+      <h2>数据洞察</h2>
+      <div class="insight">{{ report.insight }}</div>
+      <p class="notice">AI 洞察仅用于辅助解释；所有统计数字均由确定性程序计算。{% if report.insight_is_fallback %} 当前使用模板降级摘要。{% endif %}</p>
+    </section>
+    <section>
+      <h2>数据质量</h2>
+      <div class="quality">
+        <div>原始记录<br><strong>{{ report.quality.raw_rows }}</strong></div>
+        <div>完全有效<br><strong>{{ report.quality.valid_rows }}</strong></div>
+        <div>部分有效<br><strong>{{ report.quality.partial_rows }}</strong></div>
+        <div>拒绝记录<br><strong>{{ report.quality.rejected_rows }}</strong></div>
+      </div>
+    </section>
+    <section>
+      <h2>图表分析</h2>
+      <div class="charts">
+        <div class="chart-wide">{{ charts.get('daily_sales','') | safe }}</div>
+        <div>{{ charts.get('top_products','') | safe }}</div>
+        <div>{{ charts.get('region_sales','') | safe }}</div>
+      </div>
+    </section>
+    <section>
+      <h2>商品 Top-N</h2>
+      <table><thead><tr><th>商品</th><th>销售额（元）</th><th>销量</th><th>订单数</th></tr></thead><tbody>
+      {% for row in report.analysis.top_products %}<tr><td>{{ row.product }}</td><td>{{ '{:,.2f}'.format(row.sales) }}</td><td>{{ row.quantity }}</td><td>{{ row.orders }}</td></tr>{% endfor %}
+      </tbody></table>
+    </section>
+    <section>
+      <h2>需关注记录</h2>
+      {% if report.anomalies %}
+      <table><thead><tr><th>订单</th><th>源行</th><th>类型</th><th>原因</th><th>金额</th></tr></thead><tbody>
+      {% for row in report.anomalies %}<tr><td>{{ row.order_id or '-' }}</td><td>{{ row.source_row or '-' }}</td><td>{{ row.anomaly_type }}</td><td>{{ row.anomaly_reason }}</td><td>{{ '{:,.2f}'.format(row.sales_amount or 0) }}</td></tr>{% endfor %}
+      </tbody></table>
+      {% else %}<p>未发现规则异常或 IQR 统计异常。</p>{% endif %}
+    </section>
+  </main>
+  <footer>统计口径：销售额仅包含已完成订单；退款率为已退款订单数除以通过关键业务校验的订单数。</footer>
+</body>
+</html>

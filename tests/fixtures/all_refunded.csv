@@ -1,0 +1,3 @@
+order_id,order_date,region,category,product,quantity,unit_price,discount,status
+R001,2026-06-01,华东,电子产品,耳机,1,100,0,已退款
+R002,2026-06-02,华南,家居用品,台灯,2,150,0.10,已退款

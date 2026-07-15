@@ -1,0 +1,5 @@
+exceptions 0
+titles ['AI Data Insight Report']
+2026-07-15 20:11:30.656 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-07-15 20:11:31,630 INFO src.loader Loaded CSV rows=20 columns=9
+2026-07-15 20:11:31,643 INFO src.cleaner Cleaned CSV raw=20 accepted=17 partial=1 rejected=3

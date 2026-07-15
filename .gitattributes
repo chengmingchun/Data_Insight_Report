@@ -1,0 +1,11 @@
+*.py text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+*.md text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+*.csv text eol=lf
+*.html text eol=lf
+
+outputs/*.html whitespace=-blank-at-eol,-blank-at-eof
+docs/process/*.log whitespace=-blank-at-eol,-blank-at-eof

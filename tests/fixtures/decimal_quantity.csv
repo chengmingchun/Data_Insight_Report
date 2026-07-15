@@ -1,0 +1,2 @@
+order_id,order_date,region,category,product,quantity,unit_price,discount,status
+Q001,2026-06-01,华东,电子产品,耳机,1.5,100,0,已完成
