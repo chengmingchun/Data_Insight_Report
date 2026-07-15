@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 数据分析报告工具｜设计澄清</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: rgba(255,255,255,.88);
+      --text: #172033;
+      --muted: #697386;
+      --line: #dfe5ef;
+      --primary: #4f6df5;
+      --primary-soft: #eef1ff;
+      --success: #1f9d6a;
+      --warning: #c78116;
+      --danger: #d34a4a;
+      --shadow: 0 18px 50px rgba(31, 42, 68, .10);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(79,109,245,.10), transparent 30%),
+        radial-gradient(circle at 95% 10%, rgba(31,157,106,.08), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 72px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 52px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 30px;
+      background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(247,249,255,.92));
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -90px;
+      top: -90px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(79,109,245,.18), rgba(79,109,245,0));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 8px 13px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .04em;
+    }
+
+    h1 {
+      max-width: 800px;
+      margin: 20px 0 14px;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 1.08;
+      letter-spacing: -.04em;
+    }
+
+    .hero p {
+      max-width: 800px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 34px;
+    }
+
+    .metric {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.82);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 26px;
+      margin-bottom: 2px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section {
+      margin-top: 28px;
+      padding: 32px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: 0 12px 32px rgba(31,42,68,.07);
+      backdrop-filter: blur(16px);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -.02em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 640px;
+    }
+
+    .principle {
+      padding: 22px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #172033, #243250);
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .principle span { color: #aebcff; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(110px, 1fr));
+      gap: 12px;
+      align-items: center;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .node {
+      min-width: 120px;
+      padding: 18px 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: white;
+      text-align: center;
+    }
+
+    .node b {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .node small {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .arrow {
+      color: var(--primary);
+      text-align: center;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .grid-2, .grid-3 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .card {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      margin-bottom: 10px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .module-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .module {
+      padding: 18px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .module code {
+      display: inline-block;
+      margin-bottom: 8px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .module p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .boundary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .boundary-box {
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: white;
+    }
+
+    .boundary-box.good { border-top: 4px solid var(--success); }
+    .boundary-box.bad { border-top: 4px solid var(--danger); }
+
+    .boundary-box h3 {
+      margin: 0 0 12px;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li { margin: 7px 0; }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: white;
+    }
+
+    th, td {
+      padding: 15px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f7f9fc;
+      font-size: 13px;
+    }
+
+    td {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    td strong { color: var(--text); }
+
+    .code {
+      overflow-x: auto;
+      padding: 20px;
+      border-radius: 16px;
+      background: #111827;
+      color: #dbe6ff;
+      font: 13px/1.7 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre;
+    }
+
+    .callout {
+      padding: 20px;
+      border-left: 4px solid var(--warning);
+      border-radius: 14px;
+      background: #fff8e9;
+      color: #71501c;
+    }
+
+    details {
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+    }
+
+    details + details { margin-top: 10px; }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .footer {
+      margin-top: 28px;
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .hero-grid, .grid-3, .module-list { grid-template-columns: repeat(2, 1fr); }
+      .grid-2, .boundary { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+      .hero { padding: 34px 26px; }
+    }
+
+    @media (max-width: 600px) {
+      .page { width: min(100% - 18px, 1180px); }
+      .section { padding: 22px 16px; }
+      .hero-grid, .grid-3, .module-list { grid-template-columns: 1fr; }
+      .section-head { display: block; }
+      .section-head p { margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <span class="eyebrow">SYSTEM DESIGN CLARIFICATION</span>
+      <h1>AI 数据分析报告工具</h1>
+      <p>
+        这不是“让 AI 读 CSV 然后随便总结”，而是一条可靠的数据工程链路：
+        先用确定性代码完成清洗、统计和异常检测，再让 LLM 对结构化结果进行解释。
+      </p>
+
+      <div class="hero-grid">
+        <div class="metric"><strong>60%</strong><span>工程能力</span></div>
+        <div class="metric"><strong>40%</strong><span>AI 洞察</span></div>
+        <div class="metric"><strong>3+</strong><span>默认图表</span></div>
+        <div class="metric"><strong>0</strong><span>LLM 参与统计计算</span></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="principle">
+        核心原则：<span>代码负责算对，AI 负责说清楚。</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>1. 系统到底做什么</h2>
+        </div>
+        <p>用户上传订单 CSV 后，系统完成完整的数据分析闭环，而不是只展示几张图。</p>
+      </div>
+
+      <div class="flow">
+        <div class="node"><b>上传 CSV</b><small>或内置样例数据</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>清洗校验</b><small>缺失、重复、非法值</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>统计分析</b><small>计数、求和、分组、Top-N</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>图表与异常</b><small>趋势、排行、IQR</small></div>
+      </div>
+
+      <div class="flow" style="margin-top:12px">
+        <div class="node"><b>结构化结果</b><small>JSON / DTO</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>LLM 洞察</b><small>趋势、风险、建议</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>HTML 报告</b><small>可预览、可下载</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>完整交付</b><small>代码、测试、样例报告</small></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>2. 为什么采用模块化单体</h2>
+        </div>
+        <p>题目要的是工程完整性，不是微服务数量。原型阶段最优解是模块清晰、部署简单、测试方便。</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <span class="tag">更快交付</span>
+          <h3>一个仓库即可运行</h3>
+          <p>不需要前后端分离、服务注册、消息队列和复杂部署。</p>
+        </div>
+        <div class="card">
+          <span class="tag">更容易验证</span>
+          <h3>核心统计可单测</h3>
+          <p>Loader、Cleaner、Analyzer、Anomaly 都可独立测试。</p>
+        </div>
+        <div class="card">
+          <span class="tag">方便演进</span>
+          <h3>模块边界已经保留</h3>
+          <p>未来可将 FastAPI、数据库、异步任务逐步替换进去。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>3. 模块职责</h2>
+        </div>
+        <p>页面只负责交互，不承载业务逻辑；所有分析能力都沉淀在独立模块中。</p>
+      </div>
+
+      <div class="module-list">
+        <div class="module"><code>loader.py</code><p>读取 CSV、校验类型、编码、字段完整性。</p></div>
+        <div class="module"><code>cleaner.py</code><p>处理缺失、重复、非法数值，并生成质量报告。</p></div>
+        <div class="module"><code>analyzer.py</code><p>计算总览指标、分组统计、Top-N 和透视结果。</p></div>
+        <div class="module"><code>anomaly.py</code><p>执行规则异常和 IQR 统计异常检测。</p></div>
+        <div class="module"><code>charts.py</code><p>仅负责把分析结果转换为 Plotly 图表。</p></div>
+        <div class="module"><code>insight.py</code><p>调用 LLM，总结结构化指标，支持 fallback。</p></div>
+        <div class="module"><code>report.py</code><p>使用 Jinja2 生成完整 HTML 报告。</p></div>
+        <div class="module"><code>orchestrator.py</code><p>统一编排整个流程，对 UI 提供单一入口。</p></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>4. 技术选型为什么这样定</h2>
+        </div>
+        <p>每个技术都服务于题目目标：快速实现、可靠统计、可视化清晰、AI 能力可控。</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>技术</th>
+              <th>承担职责</th>
+              <th>选择原因</th>
+              <th>没有选择的方向</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Python 3.11+</strong></td>
+              <td>主要开发语言</td>
+              <td>数据分析、图表、LLM 生态成熟，原型效率高</td>
+              <td>Java 会显著增加 CSV、图表和页面成本</td>
+            </tr>
+            <tr>
+              <td><strong>Streamlit</strong></td>
+              <td>上传、展示、下载</td>
+              <td>无需单独前端工程，指标卡和图表开箱即用</td>
+              <td>第一版不做 React + FastAPI</td>
+            </tr>
+            <tr>
+              <td><strong>Pandas</strong></td>
+              <td>清洗、聚合、透视</td>
+              <td>统计能力成熟，容易校验</td>
+              <td>不引入 Spark，数据规模不需要</td>
+            </tr>
+            <tr>
+              <td><strong>Plotly</strong></td>
+              <td>交互式图表</td>
+              <td>可嵌入 Streamlit 和 HTML 报告</td>
+              <td>不使用复杂前端图表框架</td>
+            </tr>
+            <tr>
+              <td><strong>Jinja2</strong></td>
+              <td>HTML 报告导出</td>
+              <td>模板清晰、离线可查看、便于评审</td>
+              <td>PDF 作为加分项，不作为首版依赖</td>
+            </tr>
+            <tr>
+              <td><strong>Pydantic</strong></td>
+              <td>配置和结果 DTO</td>
+              <td>约束模块之间的数据结构</td>
+              <td>不对 DataFrame 每行建模，避免性能损耗</td>
+            </tr>
+            <tr>
+              <td><strong>OpenAI-Compatible API</strong></td>
+              <td>AI 洞察</td>
+              <td>便于切换模型服务，降低厂商耦合</td>
+              <td>不把 SDK 直接写进业务层</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>5. LLM 的边界</h2>
+        </div>
+        <p>这是整个设计最关键的地方：模型只解释结果，不参与任何核心数值计算。</p>
+      </div>
+
+      <div class="boundary">
+        <div class="boundary-box good">
+          <h3>LLM 可以做</h3>
+          <ul>
+            <li>总结整体销售表现</li>
+            <li>描述趋势和排名</li>
+            <li>解释异常数据可能代表什么</li>
+            <li>提出业务建议</li>
+            <li>把 JSON 指标转成自然语言</li>
+          </ul>
+        </div>
+
+        <div class="boundary-box bad">
+          <h3>LLM 不可以做</h3>
+          <ul>
+            <li>读取完整原始 CSV 并自行计算</li>
+            <li>计算总销售额和平均值</li>
+            <li>判断 Top-N 排名</li>
+            <li>计算退款率</li>
+            <li>生成输入中不存在的新数字</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="code" style="margin-top:18px">{
+  "overview": {
+    "valid_orders": 982,
+    "total_sales": 1285300.50,
+    "average_order_value": 1308.86,
+    "refund_rate": 0.043
+  },
+  "top_products": [
+    {"product": "显示器", "sales": 235000}
+  ],
+  "anomalies": {
+    "count": 12,
+    "largest_order": 68000
+  }
+}</div>
+
+      <div class="callout" style="margin-top:16px">
+        即使 API Key 缺失或 LLM 调用失败，统计、图表和 HTML 报告也必须正常生成。
+        AI 摘要改用模板化 fallback，不能让外部模型服务成为系统单点。
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>6. 脏数据如何处理</h2>
+        </div>
+        <p>设计重点不是“删掉坏数据”，而是明确记录每一类问题以及它是否还能参与部分分析。</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <span class="tag">有效数据</span>
+          <h3>参与全部分析</h3>
+          <p>订单号、商品、数量、单价、折扣等关键字段均合法。</p>
+        </div>
+        <div class="card">
+          <span class="tag">部分有效</span>
+          <h3>参与部分分析</h3>
+          <p>例如日期非法，但金额字段有效，可参与总销售额，不参与时间趋势。</p>
+        </div>
+        <div class="card">
+          <span class="tag">拒绝数据</span>
+          <h3>不进入核心统计</h3>
+          <p>例如数量为负、单价无效、订单号缺失，但仍保留在拒绝记录中供追踪。</p>
+        </div>
+      </div>
+
+      <div class="pill-row">
+        <span class="pill">重复订单：保留第一条</span>
+        <span class="pill">缺失地区：填充“未知地区”</span>
+        <span class="pill">缺失折扣：填充 0</span>
+        <span class="pill">非法日期：不参与时间趋势</span>
+        <span class="pill">负数量：标记业务异常</span>
+        <span class="pill">极端金额：保留并标记</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>7. 设计模式不是为了炫技</h2>
+        </div>
+        <p>每个模式都有明确落点，目的是让模块可替换、可测试、可扩展。</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <span class="tag">策略模式</span>
+          <h3>清洗规则 / 异常算法 / 洞察生成</h3>
+          <p>不同规则独立实现，可增加新规则，不修改主流程。</p>
+        </div>
+        <div class="card">
+          <span class="tag">适配器模式</span>
+          <h3>统一不同 LLM 服务接口</h3>
+          <p>业务层只调用 generate(payload)，不关心底层厂商 SDK。</p>
+        </div>
+        <div class="card">
+          <span class="tag">工厂模式</span>
+          <h3>根据配置创建 Provider</h3>
+          <p>支持 OpenAI、兼容 API、Mock 和模板 fallback。</p>
+        </div>
+        <div class="card">
+          <span class="tag">门面模式</span>
+          <h3>Orchestrator 对 UI 提供单一入口</h3>
+          <p>页面不直接组合八个模块，减少耦合。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>8. 最终交付长什么样</h2>
+        </div>
+        <p>评审人员应该可以在几分钟内启动、验证和理解项目。</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card">
+          <span class="tag">运行程序</span>
+          <h3>Streamlit 页面</h3>
+          <p>上传 CSV、查看统计、图表、异常和 AI 洞察。</p>
+        </div>
+        <div class="card">
+          <span class="tag">样例结果</span>
+          <h3>完整 HTML 报告</h3>
+          <p>包含数据质量、指标、图表、异常和 AI 摘要。</p>
+        </div>
+        <div class="card">
+          <span class="tag">工程证明</span>
+          <h3>测试 + README</h3>
+          <p>核心统计有单测，README 给出启动和口径说明。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <h2>9. Codex 实现顺序</h2>
+        </div>
+        <p>不要一次性生成全部代码。按阶段闭环，每阶段完成后运行测试。</p>
+      </div>
+
+      <details open>
+        <summary>阶段 1：工程骨架</summary>
+        <p>目录、依赖、配置、数据模型、异常类、样例数据、README 初稿。</p>
+      </details>
+      <details>
+        <summary>阶段 2：确定性数据链路</summary>
+        <p>Loader、Cleaner、Analyzer、Anomaly 和对应单元测试。</p>
+      </details>
+      <details>
+        <summary>阶段 3：页面与图表</summary>
+        <p>Streamlit 页面、指标卡、数据质量区、三张核心图。</p>
+      </details>
+      <details>
+        <summary>阶段 4：AI 洞察</summary>
+        <p>Provider 接口、LLM Adapter、严格 Prompt、超时处理和 fallback。</p>
+      </details>
+      <details>
+        <summary>阶段 5：HTML 报告</summary>
+        <p>Jinja2 模板、图表嵌入、报告下载、中文显示验证。</p>
+      </details>
+      <details>
+        <summary>阶段 6：交付完善</summary>
+        <p>README、样例报告、测试通过、演示说明和已知限制。</p>
+      </details>
+    </section>
+
+    <section class="section">
+      <div class="principle">
+        最终面试表达：<span>这是一个可靠的数据分析系统，AI 只是最后一层解释能力。</span>
+      </div>
+    </section>
+
+    <div class="footer">
+      AI Data Insight Report · Design Clarification · Based on SDD v1.0
+    </div>
+  </main>
+</body>
+</html>
