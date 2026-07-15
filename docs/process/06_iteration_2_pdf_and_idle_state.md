@@ -32,9 +32,17 @@ python -m scripts.generate_sample_report
 
 ## 验证结果
 
-- 自动化测试：29 项全部通过，总覆盖率 96%。
+- 自动化测试：31 项全部通过，总覆盖率 96%。
 - 初始页测试：未上传 CSV 时无指标、无下载按钮，样例开关默认关闭。
 - 空输入测试：主动点击生成只显示提示，不创建分析结果。
 - PDF 样例：`outputs/sample_report.pdf`，共 3 页。
 - 视觉验收：中文、页眉、页码、表格和三张矢量图表均无截断、重叠或缺字。
 - 三页渲染检查图保存在 `docs/process/pdf-visual-validation/`，作为视觉验收过程件。
+
+## 客户感知与模型配置修订
+
+- 页面、HTML 和 PDF 不再展示洞察提供方、模板降级状态等内部实现信息。
+- AI Settings 默认使用 DeepSeek，同时支持 OpenAI、OpenRouter 和自定义 OpenAI-compatible 服务。
+- 非 DeepSeek 服务可独立配置模型 ID、Base URL、API Key 和超时时间。
+- Provider 工厂不再拒绝非 DeepSeek 配置，统一交由兼容适配器调用。
+- 新增通用 Provider 工厂测试和设置页预设测试。

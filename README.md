@@ -1,6 +1,6 @@
 # AI Data Insight Report
 
-一个面向电商订单 CSV 的本地数据分析工具。它将文件加载、可追踪清洗、确定性统计、IQR 异常检测、交互图表、DeepSeek 洞察和离线 HTML 报告组织成一条可测试的工程链路。
+一个面向电商订单 CSV 的本地数据分析工具。它将文件加载、可追踪清洗、确定性统计、IQR 异常检测、交互图表、AI 洞察和离线报告组织成一条可测试的工程链路。
 
 ## 功能
 
@@ -9,8 +9,8 @@
 - 计算计数、求和、平均值、退款率、分组、Top-N 和二维透视。
 - 生成每日销售趋势、商品 Top-N、地区销售额三张 Plotly 图表。
 - 使用规则和 IQR 检测异常，保留并导出异常记录。
-- 在独立设置页配置 DeepSeek；模型只接收聚合 JSON。
-- DeepSeek 未配置、超时、空返回或数字校验失败时自动使用模板摘要。
+- 在独立设置页配置 OpenAI-compatible 模型；DeepSeek 是默认预设，也支持 OpenAI、OpenRouter 和自定义服务。
+- 模型未配置、超时、空返回或数字校验失败时自动使用确定性摘要。
 - 下载清洗后 CSV、异常 CSV 和包含图表的离线 HTML 报告。
 
 ## 架构
@@ -19,15 +19,15 @@
 
 ```text
 CSV 加载 -> 清洗分类 -> 确定性统计 -> IQR 异常 -> Plotly 图表
-         -> 聚合 JSON -> DeepSeek / 模板降级 -> Jinja2 HTML
+         -> 聚合 JSON -> AI 模型 / 确定性降级 -> HTML/PDF
 ```
 
 设计模式：
 
 - 门面：`AnalysisOrchestrator` 为 UI 提供单一入口。
-- 策略与依赖倒置：`InsightProvider` 可注入 DeepSeek、Mock 或模板实现。
+- 策略与依赖倒置：`InsightProvider` 可注入任意兼容模型、Mock 或模板实现。
 - 工厂：`InsightProviderFactory` 根据会话配置选择 Provider。
-- 适配器：`DeepSeekInsightProvider` 隔离 OpenAI-compatible SDK。
+- 适配器：`OpenAICompatibleInsightProvider` 隔离模型服务商差异。
 - DTO：Pydantic 模型约束模块间的统计和报告数据。
 
 详细设计见 [AI_Data_Insight_Report_SDD.md](AI_Data_Insight_Report_SDD.md)，实现决策与测试过程见 `docs/`。
@@ -40,7 +40,7 @@ CSV 加载 -> 清洗分类 -> 确定性统计 -> IQR 异常 -> Plotly 图表
 - Plotly
 - Pydantic / Pydantic Settings
 - Jinja2
-- OpenAI-compatible client（仅作为 DeepSeek API 适配层）
+- OpenAI-compatible client（支持 DeepSeek、OpenAI、OpenRouter 和自定义兼容服务）
 - Pytest / pytest-cov
 
 ## 安装与启动
@@ -85,18 +85,18 @@ docker build -t data-insight-report .
 docker run --rm -p 8501:8501 data-insight-report
 ```
 
-## DeepSeek 配置
+## AI 模型配置
 
 打开侧边栏的 **AI Settings**：
 
-1. 启用 DeepSeek 洞察。
-2. 默认模型保持 `deepseek-v4-flash`，Base URL 保持 `https://api.deepseek.com`。
+1. 选择服务预设；默认是 DeepSeek，也可选择 OpenAI、OpenRouter 或 Custom。
+2. 填写服务商支持的模型名称和 Base URL。
 3. 在密码输入框填写 API Key，保存当前会话。
 4. 返回工作台并重新生成报告。
 
 API Key 只存在当前 Streamlit 会话，不写入 CSV、HTML、日志或仓库。也可通过本地 `.env` 提供配置，字段参考 `.env.example`；真实 `.env` 已被 `.gitignore` 排除。
 
-没有 API Key 时应用仍完整执行统计、图表和导出，洞察区域会明确显示模板降级状态。
+没有 API Key 时应用仍完整执行统计、图表和导出，洞察区域使用确定性摘要且不向客户暴露内部提供方或降级状态。
 
 ## CSV 结构
 
@@ -145,7 +145,7 @@ pytest -q
 pytest --cov=src --cov-report=term-missing
 ```
 
-测试覆盖 Loader、Cleaner、Analyzer、IQR、图表、DeepSeek 降级、数字白名单、HTML 及端到端流程。自动测试不会调用真实 DeepSeek 服务。
+测试覆盖 Loader、Cleaner、Analyzer、IQR、图表、模型降级、数字白名单、HTML/PDF 及端到端流程。自动测试不会调用真实模型服务。
 
 生成完整样例报告：
 
@@ -159,7 +159,7 @@ python -m scripts.generate_sample_report
 
 ```text
 app.py                     Streamlit 分析工作台
-pages/1_AI_Settings.py     DeepSeek 设置页
+pages/1_AI_Settings.py     通用 AI 模型设置页
 src/                       业务与应用模块
 templates/report.html      离线报告模板
 data/sample_orders.csv     演示数据
@@ -174,7 +174,7 @@ outputs/                   样例报告
 
 - 第一版只支持约定字段的电商订单 CSV，不自动推断任意行业语义。
 - `order_id` 按“一行一个订单”处理，不支持一个订单多商品行的订单头合并。
-- Streamlit 会话刷新后，页面填写的 DeepSeek Key 会丢失，这是刻意的安全选择。
+- Streamlit 会话刷新后，页面填写的 API Key 会丢失，这是刻意的安全选择。
 - 日志文件、字段映射和大文件分块处理不在第一版范围。
 
 ## 演进方向

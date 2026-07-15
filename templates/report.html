@@ -36,7 +36,7 @@
 <body>
   <header>
     <h1>AI 数据洞察报告</h1>
-    <p class="meta">生成时间：{{ report.generated_at.strftime('%Y-%m-%d %H:%M:%S') }} · 洞察来源：{{ report.insight_provider }}</p>
+    <p class="meta">生成时间：{{ report.generated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
   </header>
   <main>
     <section>
@@ -51,7 +51,7 @@
     <section>
       <h2>数据洞察</h2>
       <div class="insight">{{ report.insight }}</div>
-      <p class="notice">AI 洞察仅用于辅助解释；所有统计数字均由确定性程序计算。{% if report.insight_is_fallback %} 当前使用模板降级摘要。{% endif %}</p>
+      <p class="notice">洞察仅用于辅助解释；所有统计数字均由确定性程序计算。</p>
     </section>
     <section>
       <h2>数据质量</h2>

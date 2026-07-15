@@ -1,4 +1,4 @@
-"""DeepSeek adapter, prompt guardrails and deterministic fallback."""
+"""OpenAI-compatible adapter, prompt guardrails and deterministic fallback."""
 
 from __future__ import annotations
 
@@ -55,26 +55,30 @@ class TemplateInsightProvider:
         return "".join(parts)[:300]
 
 
-class DeepSeekInsightProvider:
-    provider_name = "deepseek"
-
+class OpenAICompatibleInsightProvider:
     def __init__(
         self,
         *,
         api_key: str,
-        model: str = "deepseek-v4-flash",
-        base_url: str = "https://api.deepseek.com",
+        model: str,
+        base_url: str,
+        provider_name: str = "custom",
         timeout: float = 30.0,
         client: Any | None = None,
     ) -> None:
         if not api_key:
-            raise ValueError("DeepSeek API Key 未配置")
+            raise ValueError("API Key 未配置")
+        if not model.strip():
+            raise ValueError("模型名称未配置")
+        if not base_url.strip():
+            raise ValueError("Base URL 未配置")
         if client is None:
             from openai import OpenAI
 
             client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
         self.client = client
         self.model = model
+        self.provider_name = provider_name.strip().lower() or "custom"
 
     def generate(self, payload: InsightPayload) -> str:
         response = self.client.chat.completions.create(
@@ -92,7 +96,7 @@ class DeepSeekInsightProvider:
         )
         content = response.choices[0].message.content
         if not content or not content.strip():
-            raise ValueError("DeepSeek 返回空内容")
+            raise ValueError("模型返回空内容")
         return content.strip()[:300]
 
     @staticmethod
@@ -105,18 +109,38 @@ class DeepSeekInsightProvider:
         )
 
 
+class DeepSeekInsightProvider(OpenAICompatibleInsightProvider):
+    """Backward-compatible DeepSeek preset for existing integrations."""
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str = "deepseek-v4-flash",
+        base_url: str = "https://api.deepseek.com",
+        timeout: float = 30.0,
+        client: Any | None = None,
+    ) -> None:
+        super().__init__(
+            api_key=api_key,
+            model=model,
+            base_url=base_url,
+            provider_name="deepseek",
+            timeout=timeout,
+            client=client,
+        )
+
+
 class InsightProviderFactory:
     @staticmethod
     def create(config: "AppConfig") -> InsightProvider:
         if not config.enable_llm or not config.llm_api_key.strip():
             return TemplateInsightProvider()
-        if config.llm_provider.lower() != "deepseek":
-            LOGGER.warning("Unsupported LLM provider=%s; using fallback", config.llm_provider)
-            return TemplateInsightProvider()
-        return DeepSeekInsightProvider(
+        return OpenAICompatibleInsightProvider(
             api_key=config.llm_api_key,
             model=config.llm_model,
             base_url=config.llm_base_url,
+            provider_name=config.llm_provider,
             timeout=config.llm_timeout_seconds,
         )
 
@@ -132,7 +156,7 @@ class InsightService:
                 text=self.provider.generate(payload),
                 is_fallback=True,
                 provider="template",
-                warning="DeepSeek 未启用或未配置，已使用确定性模板摘要。",
+                warning="AI 模型未启用或未配置，已使用确定性模板摘要。",
             )
 
         last_error: Exception | None = None
@@ -154,7 +178,7 @@ class InsightService:
             text=self.fallback.generate(payload),
             is_fallback=True,
             provider="template",
-            warning=f"DeepSeek 洞察不可用，已降级：{type(last_error).__name__}",
+            warning=f"AI 洞察不可用，已降级：{type(last_error).__name__}",
         )
 
     @staticmethod

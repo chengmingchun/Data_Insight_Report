@@ -24,6 +24,7 @@ def test_html_report_embeds_charts_and_chinese() -> None:
     assert "AI 数据洞察报告" in html
     assert "华东销售表现稳定" in html
     assert "plotly-test" in html
+    assert "洞察来源" not in html
 
 
 def test_pdf_report_has_pdf_signature_and_report_content() -> None:
