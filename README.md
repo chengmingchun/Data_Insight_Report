@@ -76,7 +76,7 @@ python -m pip install -r requirements.txt
 streamlit run app.py
 ```
 
-浏览器打开 `http://localhost:8501`。应用首次打开会自动分析 `data/sample_orders.csv`。
+浏览器打开 `http://localhost:8501`。上传 CSV 后点击“生成报告”；内置样例数据需要手动启用，不会在首次打开时自动分析。
 
 Docker：
 
@@ -153,7 +153,7 @@ pytest --cov=src --cov-report=term-missing
 python -m scripts.generate_sample_report
 ```
 
-输出位于 `outputs/sample_report.html`。
+输出位于 `outputs/sample_report.html` 和 `outputs/sample_report.pdf`。
 
 ## 项目目录
 
@@ -175,8 +175,8 @@ outputs/                   样例报告
 - 第一版只支持约定字段的电商订单 CSV，不自动推断任意行业语义。
 - `order_id` 按“一行一个订单”处理，不支持一个订单多商品行的订单头合并。
 - Streamlit 会话刷新后，页面填写的 DeepSeek Key 会丢失，这是刻意的安全选择。
-- PDF、日志文件、字段映射和大文件分块处理不在第一版范围。
+- 日志文件、字段映射和大文件分块处理不在第一版范围。
 
 ## 演进方向
 
-后续可增加字段映射、多文件对比、订单明细行模型、日志解析、PDF、异步模型调用和 10 万行以上的分块处理。
+后续可增加字段映射、多文件对比、订单明细行模型、日志解析、异步模型调用和 10 万行以上的分块处理。
